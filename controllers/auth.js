@@ -1,20 +1,35 @@
-const {StatusCodes}=require('http-status-codes');
-const Userschema=require('../models/User');
-// const BadRequestError=require('../errors/bad-request');
+const { StatusCodes } = require('http-status-codes');
+const Userschema = require('../models/User');
+const { BadRequestError, UnauthenticatedError } = require('../errors');
 
-
-const register=async(req,res)=>{
+const register = async (req, res) => {
     try {
-        const user=await Userschema.create({...req.body});
-        res.status(StatusCodes.CREATED).json({user});
+        const user = await Userschema.create({ ...req.body });
+        const token = user.createJWT();
+        console.log(token);
+        res.status(StatusCodes.CREATED).json({ user: { name: user.name }, token });
     } catch (error) {
         console.log(error);
         res.send(error);
     }
 }
 
-const login=async(req,res)=>{
-    res.send("login successfully");
+const login = async (req, res) => {
+    const { email, password } = req.body;
+    // if (!email || !password) {
+    //     throw new BadRequestError('Please provide email and password')
+    // }
+    console.log(email);
+    const user = await Userschema.findOne({ email });
+    if (!user) {
+        throw new UnauthenticatedError("Invalid Credentials");
+    }
+    const checkpass=await user.comparepasswords(password);
+    if(!checkpass){
+        throw new UnauthenticatedError("Invalid Credentials");
+    }
+    const token = user.createJWT();
+    res.status(StatusCodes.OK).json({ user: { name: user.name }, token });
 }
 
-module.exports={register,login};
+module.exports = { register, login };
