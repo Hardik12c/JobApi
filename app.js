@@ -5,7 +5,9 @@ const app = express();
 
 // connectdb
 const connectDB=require('./db/connect');
+const authenticateuser=require('./middleware/authentication');
 
+// routers
 const authrouter=require('./routes/auth');
 const jobrouter=require('./routes/jobs');
 
@@ -18,7 +20,7 @@ app.use(express.json());
 // routes
 app.use('/api/v1/auth',authrouter);
 
-app.use('/api/v1/job/',jobrouter);
+app.use('/api/v1/job',authenticateuser,jobrouter);
 
 
 app.use(notFoundMiddleware);

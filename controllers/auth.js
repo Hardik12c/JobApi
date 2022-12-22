@@ -6,7 +6,6 @@ const register = async (req, res) => {
     try {
         const user = await Userschema.create({ ...req.body });
         const token = user.createJWT();
-        console.log(token);
         res.status(StatusCodes.CREATED).json({ user: { name: user.name }, token });
     } catch (error) {
         console.log(error);
@@ -16,10 +15,9 @@ const register = async (req, res) => {
 
 const login = async (req, res) => {
     const { email, password } = req.body;
-    // if (!email || !password) {
-    //     throw new BadRequestError('Please provide email and password')
-    // }
-    console.log(email);
+    if (!email || !password) {
+        throw new BadRequestError('Please provide email and password')
+    }
     const user = await Userschema.findOne({ email });
     if (!user) {
         throw new UnauthenticatedError("Invalid Credentials");
